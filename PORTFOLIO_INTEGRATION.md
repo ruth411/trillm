@@ -4,10 +4,10 @@ This guide shows you how to add the TriLLM button to your portfolio website at r
 
 ## 1. Deploy TriLLM First
 
-Deploy the TriLLM frontend to get a live URL (see DEPLOYMENT.md).
+Deploy the TriLLM frontend to your custom subdomain (see CUSTOM_DOMAIN_DEPLOYMENT.md).
 
-After deployment, you'll have a URL like:
-- `https://trillm.vercel.app`
+After deployment, your TriLLM will be live at:
+- `https://trillm.ruthwikdovala.com`
 
 ## 2. Add TriLLM Button to Your Portfolio
 
@@ -19,7 +19,7 @@ In `src/pages/App.tsx`, add this to your desktop navigation:
 {/* TriLLM - Featured Project */}
 <li>
   <a
-    href="https://trillm.vercel.app"
+    href="https://trillm.ruthwikdovala.com"
     target="_blank"
     rel="noopener noreferrer"
     className="chip bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
@@ -39,7 +39,7 @@ In `src/pages/Projects.tsx`, add TriLLM to the projects array:
 ```tsx
 {
   title: '✨ TriLLM - Triple LLM Intelligence',
-  link: 'https://trillm.vercel.app',
+  link: 'https://trillm.ruthwikdovala.com',
   tags: ['React', 'TypeScript', 'Node.js', 'OpenAI', 'Anthropic', 'Google AI', 'Vite', 'Tailwind CSS'],
   bullets: [
     'Built an AI meta-search engine that queries ChatGPT, Claude, and Gemini simultaneously to provide the best answer.',
@@ -82,7 +82,7 @@ Add this anywhere on your portfolio:
 
 ```tsx
 <a
-  href="https://trillm.vercel.app"
+  href="https://trillm.ruthwikdovala.com"
   target="_blank"
   rel="noopener noreferrer"
   className="your-custom-styles"
@@ -101,12 +101,12 @@ Both work independently, connected only by the URL link!
 
 ## Quick Summary
 
-1. ✅ Deploy TriLLM to Vercel
-2. ✅ Copy the URL (e.g., `https://trillm.vercel.app`)
-3. ✅ Add button/link to your portfolio manually
+1. ✅ Deploy TriLLM to Vercel with custom domain
+2. ✅ Configure DNS for `trillm.ruthwikdovala.com`
+3. ✅ Add button/link to your portfolio using `https://trillm.ruthwikdovala.com`
 4. ✅ Push your portfolio changes
 5. ✅ Done!
 
 ---
 
-**Note**: Replace `https://trillm.vercel.app` with your actual deployment URL after deploying!
+**Your TriLLM will be live at**: `https://trillm.ruthwikdovala.com` 🚀
