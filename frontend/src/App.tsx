@@ -25,11 +25,16 @@ function App() {
       const apiError = err as ApiError;
       const errorMessage = apiError.message || 'Failed to get responses from AI models';
 
-      // Detect network errors
+      // Detect network/connection errors (backend not deployed)
       const isNetwork =
         errorMessage.toLowerCase().includes('network') ||
+        errorMessage.toLowerCase().includes('failed to fetch') ||
+        errorMessage.toLowerCase().includes('connection') ||
+        errorMessage.toLowerCase().includes('timeout') ||
         apiError.code === 'ERR_NETWORK' ||
-        errorMessage.toLowerCase().includes('failed to fetch');
+        apiError.code === 'ERR_CONNECTION_REFUSED' ||
+        apiError.code === 'ECONNREFUSED' ||
+        apiError.code === 'ERR_BAD_REQUEST';
 
       setIsNetworkError(isNetwork);
       setError(errorMessage);
