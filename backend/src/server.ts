@@ -10,7 +10,6 @@ app.use(cors({
   origin: [
     config.frontendUrl,
     'https://trillm.ruthwikdovala.com',
-    'https://trillm-frontend.vercel.app',
     /\.vercel\.app$/
   ],
   methods: ['GET', 'POST'],
@@ -55,8 +54,8 @@ app.use((err: any, req: Request, res: Response, next: any) => {
   });
 });
 
-// Start server (only in non-serverless environments)
-if (process.env.VERCEL !== '1' && require.main === module) {
+// Start server (only when not in Vercel serverless)
+if (process.env.VERCEL !== '1') {
   const PORT = config.port;
   app.listen(PORT, () => {
     console.log(`
