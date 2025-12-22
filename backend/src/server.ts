@@ -7,7 +7,11 @@ const app: Express = express();
 
 // Middleware
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: [
+    config.frontendUrl,
+    'https://trillm.ruthwikdovala.com',
+    /\.vercel\.app$/
+  ],
   methods: ['GET', 'POST'],
   credentials: true,
 }));
@@ -50,10 +54,11 @@ app.use((err: any, req: Request, res: Response, next: any) => {
   });
 });
 
-// Start server
-const PORT = config.port;
-app.listen(PORT, () => {
-  console.log(`
+// Start server (only when not in Vercel serverless)
+if (process.env.VERCEL !== '1') {
+  const PORT = config.port;
+  app.listen(PORT, () => {
+    console.log(`
 ╔═══════════════════════════════════════╗
 ║                                       ║
 ║   🚀 TriLLM Backend API               ║
@@ -66,14 +71,15 @@ app.listen(PORT, () => {
 ║   Query: http://localhost:${PORT}/api/query
 ║                                       ║
 ╚═══════════════════════════════════════╝
-  `);
+    `);
 
-  if (!config.openaiApiKey || config.openaiApiKey === 'your_openai_api_key_here') {
-    console.error('❌ ERROR: OpenAI API key is not configured!');
-    console.error('Please set OPENAI_API_KEY in your .env file');
-  } else {
-    console.log('✅ OpenAI configured');
-  }
-});
+    if (!config.openaiApiKey || config.openaiApiKey === 'your_openai_api_key_here') {
+      console.error('❌ ERROR: OpenAI API key is not configured!');
+      console.error('Please set OPENAI_API_KEY in your .env file');
+    } else {
+      console.log('✅ OpenAI configured');
+    }
+  });
+}
 
 export default app;
