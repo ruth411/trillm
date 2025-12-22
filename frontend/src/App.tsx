@@ -10,18 +10,29 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<QueryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isNetworkError, setIsNetworkError] = useState(false);
 
   const handleQuestionSubmit = async (question: string) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setIsNetworkError(false);
 
     try {
       const response = await api.query(question);
       setResult(response);
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to get responses from AI models');
+      const errorMessage = apiError.message || 'Failed to get responses from AI models';
+
+      // Detect network errors
+      const isNetwork =
+        errorMessage.toLowerCase().includes('network') ||
+        apiError.code === 'ERR_NETWORK' ||
+        errorMessage.toLowerCase().includes('failed to fetch');
+
+      setIsNetworkError(isNetwork);
+      setError(errorMessage);
       console.error('Query error:', err);
     } finally {
       setIsLoading(false);
@@ -61,7 +72,11 @@ function App() {
 
         {/* Error State */}
         {error && !isLoading && (
-          <ErrorState message={error} onRetry={result ? handleRetry : undefined} />
+          <ErrorState
+            message={error}
+            onRetry={result ? handleRetry : undefined}
+            isNetworkError={isNetworkError}
+          />
         )}
 
         {/* Results */}
