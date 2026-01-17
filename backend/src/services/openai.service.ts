@@ -20,11 +20,11 @@ export class OpenAIService implements LLMAdapter {
   async query(prompt: string): Promise<{ answer: string; tokensUsed: number }> {
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo', // Using GPT-3.5 for cost efficiency
+        model: 'gpt-4o-mini', // Latest affordable GPT-4 model
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful AI assistant. Provide clear, accurate, and concise answers.',
+            content: 'You are a helpful AI assistant. Provide clear, accurate, and detailed answers with examples when appropriate.',
           },
           {
             role: 'user',
@@ -32,7 +32,7 @@ export class OpenAIService implements LLMAdapter {
           },
         ],
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 1000, // Increased for more detailed responses
       });
 
       const answer = completion.choices[0]?.message?.content || 'No response generated';
