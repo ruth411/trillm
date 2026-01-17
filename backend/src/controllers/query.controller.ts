@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { OpenAIService } from '../services/openai.service';
+import { ClaudeService } from '../services/claude.service';
 import { LLMResponse, QueryResponse } from '../types';
 
 export class QueryController {
   private openaiService: OpenAIService;
+  private claudeService: ClaudeService;
 
-  constructor(openaiApiKey: string) {
+  constructor(openaiApiKey: string, anthropicApiKey: string) {
     this.openaiService = new OpenAIService(openaiApiKey);
+    this.claudeService = new ClaudeService(anthropicApiKey);
   }
 
   async handleQuery(req: Request, res: Response): Promise<void> {
@@ -32,37 +35,78 @@ export class QueryController {
 
       console.log(`[Query] Processing question: "${question.substring(0, 50)}..."`);
 
-      // Query OpenAI
+      // Query all available LLMs in parallel
       const responses: LLMResponse[] = [];
+      const promises: Promise<void>[] = [];
 
+      // Query OpenAI
       if (this.openaiService.isAvailable()) {
-        const startTime = Date.now();
-        try {
-          const result = await this.openaiService.query(question);
-          const responseTime = Date.now() - startTime;
+        const promise = (async () => {
+          const startTime = Date.now();
+          try {
+            const result = await this.openaiService.query(question);
+            const responseTime = Date.now() - startTime;
 
-          responses.push({
-            provider: 'openai',
-            answer: result.answer,
-            score: this.calculateScore(result.answer),
-            responseTime,
-            isBest: false, // Will be updated later
-            tokensUsed: result.tokensUsed,
-          });
+            responses.push({
+              provider: 'openai',
+              answer: result.answer,
+              score: this.calculateScore(result.answer),
+              responseTime,
+              isBest: false, // Will be updated later
+              tokensUsed: result.tokensUsed,
+            });
 
-          console.log(`[OpenAI] Response received in ${responseTime}ms`);
-        } catch (error: any) {
-          console.error('[OpenAI] Error:', error.message);
-          responses.push({
-            provider: 'openai',
-            answer: '',
-            score: 0,
-            responseTime: Date.now() - startTime,
-            isBest: false,
-            error: error.message,
-          });
-        }
+            console.log(`[OpenAI] Response received in ${responseTime}ms`);
+          } catch (error: any) {
+            console.error('[OpenAI] Error:', error.message);
+            responses.push({
+              provider: 'openai',
+              answer: '',
+              score: 0,
+              responseTime: Date.now() - startTime,
+              isBest: false,
+              error: error.message,
+            });
+          }
+        })();
+        promises.push(promise);
       }
+
+      // Query Claude
+      if (this.claudeService.isAvailable()) {
+        const promise = (async () => {
+          const startTime = Date.now();
+          try {
+            const result = await this.claudeService.query(question);
+            const responseTime = Date.now() - startTime;
+
+            responses.push({
+              provider: 'anthropic',
+              answer: result.answer,
+              score: this.calculateScore(result.answer),
+              responseTime,
+              isBest: false, // Will be updated later
+              tokensUsed: result.tokensUsed,
+            });
+
+            console.log(`[Claude] Response received in ${responseTime}ms`);
+          } catch (error: any) {
+            console.error('[Claude] Error:', error.message);
+            responses.push({
+              provider: 'anthropic',
+              answer: '',
+              score: 0,
+              responseTime: Date.now() - startTime,
+              isBest: false,
+              error: error.message,
+            });
+          }
+        })();
+        promises.push(promise);
+      }
+
+      // Wait for all queries to complete
+      await Promise.all(promises);
 
       // Determine best answer
       const bestResponse = this.getBestResponse(responses);

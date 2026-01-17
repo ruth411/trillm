@@ -35,7 +35,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // API Routes
-app.use('/api', createQueryRouter(config.openaiApiKey));
+app.use('/api', createQueryRouter(config.openaiApiKey, config.anthropicApiKey));
 
 // 404 handler
 app.use((req: Request, res: Response) => {
