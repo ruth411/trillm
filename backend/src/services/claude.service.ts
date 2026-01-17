@@ -20,7 +20,7 @@ export class ClaudeService implements LLMAdapter {
   async query(prompt: string): Promise<{ answer: string; tokensUsed: number }> {
     try {
       const message = await this.client.messages.create({
-        model: 'claude-3-5-sonnet-20241022', // Using Claude 3.5 Sonnet
+        model: 'claude-3-5-sonnet-20240620', // Using Claude 3.5 Sonnet (stable release)
         max_tokens: 1024,
         messages: [
           {
