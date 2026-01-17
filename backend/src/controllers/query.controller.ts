@@ -142,29 +142,76 @@ export class QueryController {
   }
 
   private calculateScore(answer: string): number {
-    // Simple scoring algorithm based on answer quality indicators
-    let score = 50; // Base score
+    // Stricter scoring algorithm based on answer quality indicators
+    let score = 40; // Lower base score - must earn points
 
-    // Length score (longer answers tend to be more detailed, up to a point)
     const length = answer.length;
-    if (length > 100) score += 10;
-    if (length > 300) score += 10;
-    if (length > 500) score += 5;
+    const words = answer.split(/\s+/).length;
 
-    // Structure indicators
-    if (answer.includes('\n\n')) score += 5; // Paragraphs
-    if (answer.match(/\d+\./g)) score += 5; // Numbered lists
-    if (answer.includes('•') || answer.includes('-')) score += 5; // Bullet points
-    if (answer.includes('```')) score += 10; // Code blocks
+    // Length & Detail score (up to +30 points)
+    if (length > 150) score += 5;  // At least some detail
+    if (length > 300) score += 10; // Good detail
+    if (length > 500) score += 10; // Comprehensive
+    if (length > 800) score += 5;  // Very thorough
 
-    // Completeness indicators
-    if (answer.toLowerCase().includes('however') || answer.toLowerCase().includes('although')) {
-      score += 5; // Nuanced answer
-    }
-    if (answer.toLowerCase().includes('example')) score += 5; // Provides examples
+    // Word count quality
+    if (words > 50) score += 5;   // Substantial content
+    if (words > 100) score += 5;  // Detailed explanation
 
-    // Cap at 100
-    return Math.min(score, 100);
+    // Structure indicators (up to +25 points)
+    const hasMultipleParagraphs = (answer.match(/\n\n/g) || []).length >= 2;
+    const hasNumberedList = /\d+\./g.test(answer);
+    const hasBulletPoints = /[•\-]\s/g.test(answer);
+    const hasCodeBlock = answer.includes('```');
+    const hasHeaders = /^#{1,6}\s/m.test(answer);
+
+    if (hasMultipleParagraphs) score += 8; // Well-organized
+    if (hasNumberedList) score += 6;       // Structured points
+    if (hasBulletPoints) score += 5;       // Clear formatting
+    if (hasCodeBlock) score += 12;         // Technical examples
+    if (hasHeaders) score += 4;            // Clear sections
+
+    // Quality & Depth indicators (up to +30 points)
+    const hasNuance = answer.toLowerCase().includes('however') ||
+                      answer.toLowerCase().includes('although') ||
+                      answer.toLowerCase().includes('while') ||
+                      answer.toLowerCase().includes('whereas');
+    const hasExamples = answer.toLowerCase().includes('example') ||
+                        answer.toLowerCase().includes('for instance') ||
+                        answer.toLowerCase().includes('such as');
+    const hasComparison = answer.toLowerCase().includes('compared to') ||
+                          answer.toLowerCase().includes('versus') ||
+                          answer.toLowerCase().includes('unlike');
+    const hasSteps = answer.toLowerCase().includes('first') ||
+                     answer.toLowerCase().includes('step');
+    const hasContext = answer.toLowerCase().includes('because') ||
+                       answer.toLowerCase().includes('since') ||
+                       answer.toLowerCase().includes('reason');
+
+    if (hasNuance) score += 8;      // Thoughtful analysis
+    if (hasExamples) score += 8;    // Concrete illustrations
+    if (hasComparison) score += 6;  // Comparative analysis
+    if (hasSteps) score += 4;       // Procedural clarity
+    if (hasContext) score += 4;     // Explains why
+
+    // Penalize poor quality indicators
+    if (length < 50) score -= 15;   // Too brief
+    if (words < 20) score -= 10;    // Insufficient content
+    if (!answer.includes('.')) score -= 10; // No proper sentences
+
+    // Bonus for exceptional answers
+    const structureBonus = (hasMultipleParagraphs ? 1 : 0) +
+                          (hasNumberedList ? 1 : 0) +
+                          (hasCodeBlock ? 1 : 0);
+    if (structureBonus >= 2) score += 5; // Well-structured overall
+
+    const qualityBonus = (hasNuance ? 1 : 0) +
+                         (hasExamples ? 1 : 0) +
+                         (hasComparison ? 1 : 0);
+    if (qualityBonus >= 2) score += 5; // High-quality content
+
+    // Ensure score stays in valid range
+    return Math.max(0, Math.min(score, 100));
   }
 
   private getBestResponse(responses: LLMResponse[]): LLMResponse | null {
